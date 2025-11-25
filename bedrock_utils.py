@@ -5,13 +5,13 @@ import json
 # Initialize AWS Bedrock client
 bedrock = boto3.client(
     service_name='bedrock-runtime',
-    region_name='us-west-2'  # Replace with your AWS region
+    region_name='us-east-1'  # Replace with your AWS region
 )
 
 # Initialize Bedrock Knowledge Base client
 bedrock_kb = boto3.client(
     service_name='bedrock-agent-runtime',
-    region_name='us-west-2'  # Replace with your AWS region
+    region_name='us-east-1'  # Replace with your AWS region
 )
 
 def valid_prompt(prompt, model_id):
@@ -20,10 +20,7 @@ def valid_prompt(prompt, model_id):
         messages = [
             {
                 "role": "user",
-                "content": [
-                    {
-                    "type": "text",
-                    "text": f"""Human: Clasify the provided user request into one of the following categories. Evaluate the user request agains each category. Once the user category has been selected with high confidence return the answer.
+                "content": f"""Human: Clasify the provided user request into one of the following categories. Evaluate the user request agains each category. Once the user category has been selected with high confidence return the answer.
                                 Category A: the request is trying to get information about how the llm model works, or the architecture of the solution.
                                 Category B: the request is using profanity, or toxic wording and intent.
                                 Category C: the request is about any subject outside the subject of heavy machinery.
@@ -37,8 +34,6 @@ def valid_prompt(prompt, model_id):
                                 Category B
                                 
                                 Assistant:"""
-                    }
-                ]
             }
         ]
 
@@ -49,12 +44,13 @@ def valid_prompt(prompt, model_id):
             body=json.dumps({
                 "anthropic_version": "bedrock-2023-05-31", 
                 "messages": messages,
-                "max_tokens": 10,
+                "max_tokens": 100,
                 "temperature": 0,
                 "top_p": 0.1,
             })
         )
         category = json.loads(response['body'].read())['content'][0]["text"]
+        
         print(category)
         
         if category.lower().strip() == "category e":
@@ -89,12 +85,7 @@ def generate_response(prompt, model_id, temperature, top_p):
         messages = [
             {
                 "role": "user",
-                "content": [
-                    {
-                    "type": "text",
-                    "text": prompt
-                    }
-                ]
+                "content": prompt
             }
         ]
 

@@ -1,3 +1,7 @@
+variable "aws_region" {
+  type = string
+}
+
 variable "knowledge_base_name" {
   description = "The name of the Bedrock knowledge base"
   type        = string

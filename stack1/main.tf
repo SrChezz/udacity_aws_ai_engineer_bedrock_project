@@ -1,5 +1,16 @@
 provider "aws" {
-  region = "us-west-2"  # Change this to your desired region
+  region = var.aws_region
+}
+
+data "aws_caller_identity" "current" {}
+
+locals {
+  azs = [
+    "${var.aws_region}a",
+    "${var.aws_region}b",
+    "${var.aws_region}c"
+  ]
+  bucket_name = "bedrock-kb-${data.aws_caller_identity.current.account_id}"
 }
 
 module "vpc" {
@@ -9,7 +20,7 @@ module "vpc" {
   name = "bedrock-poc-vpc"
   cidr = "10.0.0.0/16"
 
-  azs             = ["us-west-2a", "us-west-2b", "us-west-2c"]
+  azs             = local.azs
   private_subnets = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
   public_subnets  = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
 
@@ -32,18 +43,11 @@ module "aurora_serverless" {
   vpc_id             = module.vpc.vpc_id 
   subnet_ids         = module.vpc.private_subnets
 
-  # Optionally override other defaults
   database_name    = "myapp"
   master_username  = "dbadmin"
   max_capacity     = 1
   min_capacity     = 0.5
   allowed_cidr_blocks = ["10.0.0.0/16"]   
-}
-
-data "aws_caller_identity" "current" {}
-
-locals {
-  bucket_name = "bedrock-kb-${data.aws_caller_identity.current.account_id}"
 }
 
 module "s3_bucket" {
